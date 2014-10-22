@@ -21,5 +21,5 @@ func qsort(input: [Int]) -> [Int] {
 
  [1]: http://www.objc.io/snippets/
  [2]: http://www.objc.io/snippets/3.html
- [3]: http://bifidy.net/
+ [3]: http://bifidy.net/index.php/249
  [4]: http://www.objc.io/snippets/1.html
