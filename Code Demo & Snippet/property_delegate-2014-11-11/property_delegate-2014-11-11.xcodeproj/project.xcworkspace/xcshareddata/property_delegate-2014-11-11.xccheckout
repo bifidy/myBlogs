@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>18667B9A-9EE6-415E-A19A-006E3F0BEED3</string>
+	<key>IDESourceControlProjectName</key>
+	<string>property_delegate-2014-11-11</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>FF06A692648702414053B335D35C8A723F2F0243</key>
+		<string>https://github.com/bifidy/myBlogs.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Code Demo &amp; Snippet/property_delegate-2014-11-11/property_delegate-2014-11-11.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>FF06A692648702414053B335D35C8A723F2F0243</key>
+		<string>../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/bifidy/myBlogs.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>FF06A692648702414053B335D35C8A723F2F0243</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>FF06A692648702414053B335D35C8A723F2F0243</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Blogs</string>
+		</dict>
+	</array>
+</dict>
+</plist>

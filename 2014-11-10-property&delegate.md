@@ -34,7 +34,88 @@
 
 ###点语法
 
-提到了`getter`与`setter`，我们就顺便说一说点语法了。
+提到了`getter`与`setter`，我们就顺便说一说点语法了。用`.`来表示拥有和调用，始于C语言结构体调用内部变量的语法（这里笔者没有做考证，语言历史太庞杂了ಥ_ಥ）。`.`是C语言中优先级最高的运算符之一，它是一个从左向右结合的双目运算符，计算的返回值是左侧结构体中以右侧标识符命名的变量，比如:
+
+<pre>
+CGRect *rect;
+rect.size.height = 1;
+rect.size.width = rect.size.height;
+</pre>
+
+OC对这个运算符做了拓展，当左侧为一个对象时，该运算实质上等价于调用了类内`getter`或`setter`型的方法：
+
+ * `getter`方法就是取值方法，它是一个只有返回值的无参方法。通常，我们要求这类方法的名称与它返回类内实例变量或属性的标识符相同。不过实际上，什么都可以= =
+
+ * `setter`方法则是赋值方法，它是一个无返回值且拥有单一参数的方法。这类方法在命名时需要遵循规则，即大写预先定义好的标识符首字母，再加上一个set前缀。
+
+当且仅当点语法处于`=`符号左边，即赋值语句时，我们会调用`setter`方法，除此之外，都是在调用`getter`方法。以下是声明示例：
+<pre>
+//getter
+-(id)method;
+
+//setter
+-(void)setMethod:(id)sender;
+</pre>
+
+点语法的好处在于，我们可以以一种更为统一的表达方式去表示内部实例变量的存取，且让语句显得直观易读。OC为了代码的易读性刻意调整表达方式的小措施有很多，点语法也是其中一个。
+
+不过，点语法作为一种便捷语法出现，虽然为类内实例变量的存取而生，但实际上并非只有在这种情况下才使用。在实际情况下，我们既可以重写`setter`与`getter`来实现额外的效果，更可以依靠以上描述的方法定义随意的使用点语法来调用方法。
+
+更为离机的是，点语法是不分类方法(+)与实例方法的(-)。也就是说，其实我们可以这样生成一个对象：`NSObject *obj = NSObject.alloc.init`。
+
+为了让整个语法显得更丧心病狂，笔者还特地准备了一段demo:
+
+<pre>
+@implementation BCObject
+
++(BCObject *)classMethod{
+    return [BCObject new];
+}
+
++(void)setClassMethod:(id)sender{
+    BCObject.classMethod.method = sender;
+}
+
+-(id)method{
+    return self;
+}
+
+-(void)setMethod:(id)sender{
+    if ([sender isKindOfClass:[NSString class]]) {
+        NSLog(@"%@",sender);
+    }else{
+        return;
+    }
+}
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        //实例方法的点语法
+        BCObject *obj = [BCObject new];
+        NSLog(@"%@",[obj.method class]);
+        obj.method = @"Hello world.";
+        //类方法的点语法
+        id obj2 = BCObject.classMethod;
+        NSLog(@"%@",[obj2 class]);
+        BCObject.classMethod = @"Hello world, too.";
+    }
+    return 0;
+}
+/*输出结果
+BCObject
+Hello world.
+BCObject
+Hello world, too.
+*/
+@end	
+</pre>
+
+####**慎用点语法**####
+
+如果再不加以声明的话，这就有点教坏小朋友的节奏了。点语法除了是属性存取的利器之外，也是混淆视听的好手，在debug与阅读源码的时候记得为每个点语法追根溯源，并不是每个点都意味着一个属性与实例的存在。
+
+说到点语法，这里顺便为大家推荐一下[raywenderlich的OC编码风格建议][4]，里面会提到很多书写建议，帮助大家规范自己的代码。嗯，应该已经说的挺多了。
+
 
 ###内存管理
 
@@ -68,7 +149,7 @@ for(int i = 0 ; i < obj.retainCount ; i++){
 
 ###类内实例
 
-没有之前在底层实现上的铺垫，讲到这里往往需要花费很多时间。如果你之前接触过数据结构，会知道数据结构其实是包含着**逻辑结构**与**物理结构**（储存结构），逻辑结构与物理结构并不一定要统一。C语言的数组是为数不多逻辑结构与储存结构相同的数据结构之一，但是在实践中，让逻辑结构与物理结构统一并不是一件好事。比如一个C语言的数组中间所有值为0的位置即便再也用不到，只要数组还在，你就无法使用那些内存。
+没有之前在底层实现上的铺垫，讲到这里往往需要花费很多时间。如果你之前接触过数据结构，会知道数据结构其实是包含着**逻辑结构**与**物理结构**（储存结构）的，且两者并不一定要统一。C语言的数组是为数不多逻辑结构与储存结构相同的数据结构之一，但是在实践中，让逻辑结构与物理结构统一并不是一件好事。比如一个C语言的数组中间所有值为0的位置即便再也用不到，只要数组还在，你就无法使用那些内存。
 
 与这样的思路一脉相承，我们在构造类内实例的时候，其实只是构造了它们的逻辑结构，而在实际上，任何两个对象是不存在谁属于谁的。在物理存储上，他们的等级是完全平行的。唯一用以标记这种逻辑关系的，只不过是一个类内的指针而已。真正在物理上具有所属关系的，反倒是一个对象和这个对象内的指针。
 
@@ -78,9 +159,124 @@ for(int i = 0 ; i < obj.retainCount ; i++){
 
 最后补充一点可能模糊的地方，指针的指向，是为了调用，而调用，则是为了读写（或者存取？其实一个意思）。在类的内部，我们即可以使用实例的指针，也可以使用这个类的`setter`与`getter`来调用这个实例，比如一个`UIViewController`的`_view`和`self.view`是相同的效果，当然前提是你没有重写`_view`的`getter`。
 
-而在类的外部，我们只能使用`setter`和`getter`来调用属性。除此之外，我们也可以使用`->`来调用`@public`声明的实例，不过，已经很少有人这么做了。
+而在类的外部，我们通常使用`setter`和`getter`来调用属性。当然，我们也可以使用`->`来调用`@public`声明的实例，不过，已经很少有人这么做了。
 
+###代理与协议
+
+通常来说，当我们讨论代理与协议的时候，都是将其归结在对模式的讨论中。作为实现回调的一种选择，这种模式大面积的出现在OC框架的各个地方。甚至为其设立了专门的语法标记，相比较而言，其它的模式都只是几个特定的类与方法而已。
+
+不过，站在模式的角度上去讲代理与协议，就需要将不同的代码成分归结为模式里的各种模型。模式作为一个理论化模型，代码实现是多种多样的，即使在OC中已经为我们设计了理想的实现方案，可实际上，模式与代码实现是没有必然性的。
+
+将模式具化在代码里，实质在于让代码实现该模式的各个特性。笔者初学模式的时候，遇到的总是讲一大堆代理/协议模式实现了什么功能，然后展示代码示例。感觉就像是有人向自己展示了一张拼图，然后把拼图倒给自己看一样。你TM在逗我？（好吧= =笔者又吐槽了。。。）引几位初学者的共同心声：“认识，见到知道是。会用，但是不懂，也不会写= =”
+
+所以，在本章讨论里，对代理与协议，笔者打算去掉模式相关的概念。而模式相关的理解，请期待下一章:]
+
+其实在上文中已经做了充分的铺垫，这里我们就具体一点说明问题：如何实现两个对象的相互调用？
+
+说的更具体一点，现在我们假设有`ClassA`和`ClassB`两个类，每个类都有`methodA`和`methodB`两个方法，而我们要求`ClassA`调用`MethodA`时，`ClassB`也调用`methodA`，`ClassB`调用`MethodB`时亦然。
+
+是不是被上面的A和B搞的有点蒙圈？我们来个形象点的比喻，我和你面对面站着，游戏规则是，我举起左手的时候你得举起左手，而你举起右手的时候我也得举起右手。
+
+代码该怎么实现呢？其实很简单，两个类相互有一个指向对方的指针，在自己的方法实现里调用另一个实例的对应方法不是就可以了么？对了，据说如果两个对象相互都有一个`strong`的指针指向另一个对象，是会导致两个对象都无法被释放，引发引用循环的！所以，只要至少有一个指针是`weak`就可以了吧？对，答案就是这样= =
+
+于是按照上面这段（坑爹的）描述，我们来写两个类好了，为了方便阅读，笔者依旧将声明和实现部分写在了同一个文件里，再次敬告，在自己写代码的时候，千万不要这样做= =！：
+
+<pre>
+@import Foundation;
+//ClassB的前向引用申明，下章我们再说它 :]
+@class ClassB;
+
+//ClassA的声明部分
+@interface ClassA : NSObject
+
+/**
+ *  weak型指针属性，指向一个ClassB类的对象
+ */
+@property (nonatomic,weak) ClassB *B;
+
+-(void)methodA;
+
+-(void)methodB;
+
+@end
+
+//ClassB的声明部分
+@interface ClassB : NSObject
+
+/**
+ *  weak型指针属性，指向一个ClassA类的对象
+ */
+@property (nonatomic,weak) ClassA *A;
+
+-(void)methodA;
+
+-(void)methodB;
+
+@end
+
+//ClassA的实现部分
+@implementation ClassA
+
+-(void)methodA{
+    NSLog(@"method A @Class A");
+    [self.B methodA];
+}
+
+-(void)methodB{
+    NSLog(@"method B @Class A");
+}
+
+@end
+
+//ClassB的实现部分
+@implementation ClassB
+
+-(void)methodA{
+    NSLog(@"method A @Class B");
+}
+
+-(void)methodB{
+    NSLog(@"method B @Class B");
+    [self.A methodB];
+}
+
+@end
+
+//附上测试代码：
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        //分别新建两个类的对象
+        ClassA *A = [ClassA new];
+        ClassB *B = [ClassB new];
+        //让类内的指针指向另一个对象
+        A.B = B;
+        B.A = A;
+        //分别调用含有调用另一个对象
+        [A methodA];
+        [B methodB];
+    }
+    return 0;
+}
+
+/*输出结果
+method A @Class A
+method A @Class B
+method B @Class B
+method B @Class A
+*/
+</pre>
+
+上面这段代码是以两个`weak`型指针作为指向的对象相互调用，因为代码非常平行对应，虽然看着眼晕，但相信并不难理解。且让我们站在`ClassA`来看`ClassB`：
+
+ * 一方面，我们在`methodA`中调用了`ClassB`的`methodA`方法，对于`ClassA`来说，这是一个正向调用。
+ * 另一方面，我们的`methodB`会在`ClassB`调用自己的`methodB`时被调用，对于`ClassA`来说，这就是一个反向调用，或者，我们可以叫它回调。
+
+ 再者，代码示例中，我们的方法都是没有参数的。如果有参数呢？最神奇却又确实会发生的事情在于，当一个类被逆向调用的时候，该类可以获取到回调时的参数。而以上描述的情景，正是代理/协议模式的雏形。
+
+ 至于更具体的代理/协议的代码实现？我们下章见~
 
 [1]: http://bifidy.net/index.php/307
 [2]: https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/EncapsulatingData/EncapsulatingData.html
 [3]: http://bifidy.net/index.php/272
+[4]: https://github.com/raywenderlich/objective-c-style-guide
